@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.period.dao.PeriodDao">
+
+    <select id="get" resultType="com.eas.modules.period.entity.Period">
+        SELECT * FROM period WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.period.entity.Period">
+        SELECT * FROM period
+    </select>
+
+    <delete id="delete" >
+        DELETE  FROM period WHERE ID=#{id}
+    </delete>
+    <insert id="insert">
+        INSERT into period(STARTTIME,ENDTIME)
+        VALUES (#{starttime},#{endtime})
+    </insert>
+
+    <update id="update">
+        UPDATE period
+        <set>
+            <if test="starttime!=null and starttime!=''">
+                STARTTIME=#{starttime},
+            </if>
+            <if test="endtime!=null and endtime!='' ">
+                ENDTIME=#{endtime},
+            </if>
+
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="getT" resultType="com.eas.modules.period.entity.Period">
+        SELECT * FROM period
+        <where>
+            <if test="starttime!=null">
+                STARTTIME=#{starttime}
+            </if>
+            <if test="endtime!=null">
+                and ENDTIME=#{endtime}
+            </if>
+        </where>
+    </select>
+    <select id="findTimesByCondition" resultType="com.eas.modules.period.entity.Period">
+        SELECT * FROM period
+        <where>
+            <if test="queryText!=null">
+                starttime LIKE concat('%',#{queryText},'%')
+                or endtime LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findListByText" resultType="com.eas.modules.period.entity.Period">
+        SELECT * FROM period
+        <if test="queryText!=null">
+        <where>
+                starttime LIKE concat('%',#{queryText},'%')
+                or endtime LIKE concat('%',#{queryText},'%')
+        </where>
+        </if>
+    </select>
+
+    <delete id="deleteTimes">
+        DELETE FROM period
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

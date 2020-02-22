@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.grade.dao.GradeDao">
+	<!-- Integer createGrade(Grade grade) -->
+	<insert id="createGrade" 
+		parameterType="com.eas.modules.grade.entity.Grade"
+		useGeneratedKeys="true"
+		keyProperty="id">
+	INSERT INTO
+		grade(gname, academy, dept, gtotalnum)
+	VALUES( #{gname}, #{academy}, #{dept}, #{gtotalnum} )
+	</insert>
+	<!-- List<Grade> findAllGrade() -->
+    <select id="findAllGrade" 
+    	resultType="com.eas.modules.grade.entity.Grade">
+        SELECT
+        	ID, gname, academy, dept, gtotalnum
+        FROM
+        	grade
+    </select>
+	<!-- Grade findGradeById(Integer id) -->
+	<select id="findGradeById" 
+		resultType="com.eas.modules.grade.entity.Grade">
+	SELECT
+		ID, gname, academy, dept, gtotalnum
+	FROM
+		grade
+	WHERE
+		id=#{id}
+	</select>
+	<!-- Integer delete(Integer id) -->
+    <delete id="delete">
+	DELETE FROM
+		grade
+	WHERE
+		id=#{id}
+	</delete>
+	<!-- Integer update(Grade grade) -->
+	<!-- 动态SQL -->
+	<update id="update" 
+		parameterType="com.eas.modules.grade.entity.Grade">
+	UPDATE
+		grade
+	<set>
+		<if test="gname != null">
+		gname = #{gname},
+		</if>
+		<if test="academy != null">
+		academy = #{academy},
+		</if>
+		<if test="dept != null">
+		dept = #{dept},
+		</if>
+		<if test="gtotalnum != null">
+		gtotalnum = #{gtotalnum}
+		</if>
+	</set>
+	WHERE
+		id=#{id}
+	</update>
+
+
+	<select id="getT" resultType="com.eas.modules.grade.entity.Grade">
+		SELECT * FROM grade WHERE
+		<if test="gname!=null">
+			GNAME=#{gname}
+		</if>
+		<if test="gtotalnum!=null">
+			and gtotalnum=#{gtotalnum}
+		</if>
+		<if test="academy!=null">
+			and academy=#{academy}
+		</if>
+		<if test="dept!=null">
+			and dept=#{dept}
+		</if>
+	</select>
+
+	<select id="findGradesByCondition" resultType="com.eas.modules.grade.entity.Grade">
+		SELECT * FROM grade
+		<where>
+			<if test="queryText!=null">
+				GNAME LIKE concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+
+
+	<select id="findListByText" resultType="com.eas.modules.grade.entity.Grade">
+		SELECT * FROM grade
+		<where>
+			<if test="queryText!=null">
+				GNAME LIKE concat('%',#{queryText},'%') or GTOTALNUM LIKE concat('%',#{queryText},'%')
+				or ACADEMY LIKE concat('%',#{queryText},'%') or DEPT LIKE concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+
+	<delete id="deleteGrades">
+		DELETE FROM grade
+		WHERE id IN
+		<foreach collection="array" separator="," item="id" open="(" close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+
+	<insert id="insert">
+			INSERT INTO
+			grade(gname, academy, dept, gtotalnum)
+			VALUES( #{gname}, #{academy}, #{dept}, #{gtotalnum} )
+	</insert>
+
+	<select id="getGradesByAcademyAndDept" resultType="com.eas.modules.grade.entity.Grade">
+		SELECT * FROM grade
+		<where>
+			ACADEMY=#{academy} and DEPT=#{dept}
+		</where>
+	</select>
+	
+</mapper>
+
+
+
+
+
+

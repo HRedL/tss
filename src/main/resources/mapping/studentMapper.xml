@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.student.dao.StudentDao">
+
+    <!--根据value和type查询label-->
+    <!--Dict findLabelByValueAndType(String dictValue, String type);-->
+    <select id="findLabelByValueAndType" parameterType="java.lang.String"
+            resultType="com.eas.modules.dict.entity.Dict">
+        SELECT
+          *
+        FROM
+          dict
+        WHERE
+          value=#{dictValue} AND TYPE=#{type}
+    </select>
+
+    <!-- 根据gid查询班级 -->
+    <!-- Grade findGradeByGid(Integer gid); -->
+    <select id="findGradeByGid" resultType="com.eas.modules.grade.entity.Grade">
+        SELECT
+          *
+        FROM
+          grade
+        WHERE
+          ID = #{gid}
+    </select>
+
+    <!-- 根据gid查找考次exam -->
+    <!-- List<Exam> findExamsByGid(Integer gid); -->
+    <select id="findExamsByGid"
+            resultMap="exams">
+        SELECT
+            l.lnum lnum, l.subject subject, l.type type,
+            b.campus campus, b.bnum bnum, r.rnum rnum,
+            w.date date, t.starttime starttime, t.endtime endtime
+        FROM
+            exam e
+        INNER JOIN availableroom a ON e.arid = a.id
+        INNER JOIN room r ON a.RID = r.ID
+        INNER JOIN building b ON b.ID = r.BID
+        INNER JOIN lesson l ON e.LID = l.ID
+        INNER JOIN week w ON a.WEEKID = w.ID
+        INNER JOIN eas_data.period t ON a.TIMEID = t.ID
+        WHERE
+            e.gids LIKE concat('%',#{gid},'%')
+    </select>
+
+    <resultMap id="exams" type="com.eas.modules.exam.entity.Exam">
+
+        <association property="lesson"
+                     javaType="com.eas.modules.lesson.entity.Lesson">
+            <result property="subject" column="subject" />
+            <result property="lnum" column="lnum" />
+            <result property="type" column="type" />
+        </association>
+
+        <association property="availableRoom"
+                     javaType="com.eas.modules.availableRoom.entity.AvailableRoom">
+            <association property="room"  javaType="com.eas.modules.room.entity.Room">
+                <result property="rnum" column="rnum" />
+                <association property="building" javaType="com.eas.modules.building.entity.Building">
+                    <result property="campus" column="campus" />
+                    <result property="bnum" column="bnum" />
+                </association>
+            </association>
+            <association property="week" javaType="com.eas.modules.week.entity.Week">
+                <result property="date" column="date" />
+            </association>
+            <association property="period" javaType="com.eas.modules.period.entity.Period">
+                <result property="starttime" column="starttime" />
+                <result property="endtime" column="endtime" />
+            </association>
+        </association>
+
+    </resultMap>
+
+    <!-- 根据学号查找学生 -->
+    <!-- Student findStudentBySnum(String snum); -->
+    <select id="findStudentBySnum"
+            resultType="com.eas.modules.student.entity.Student">
+        SELECT
+          ID, SNUM, SNAME, SEX, GID, STEL
+        FROM
+          student
+        WHERE
+          SNUM = #{snum}
+    </select>
+
+    <select id="getT" resultType="com.eas.modules.student.entity.Student">
+        SELECT * FROM student
+        <where>
+            <if test="snum!=null">
+                snum=#{snum}
+            </if>
+        </where>
+    </select>
+
+    <select id="get" resultMap="myStudent">
+        SELECT * FROM student WHERE ID=#{id}
+    </select>
+
+    <resultMap id="myStudent" type="com.eas.modules.student.entity.Student">
+        <id column="ID" property="id"></id>
+        <result column="SNUM" property="snum"></result>
+        <result column="SNAME" property="sname"></result>
+        <result column="SEX" property="sex"></result>
+        <result column="STEL" property="stel"></result>
+        <association property="grade" select="com.eas.modules.grade.dao.GradeDao.findGradeById" column="GID"/>
+    </resultMap>
+
+    <select id="findAllList" resultMap="myStudent">
+        SELECT * FROM student
+    </select>
+
+    <delete id="delete">
+        DELETE FROM student WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO student(SNUM,SNAME,SEX,GID,STEL)
+        VALUES (#{snum},#{sname},#{sex},#{grade.id},#{stel})
+    </insert>
+
+
+    <update id="update">
+        UPDATE student
+        <set>
+            <if test="snum!=null and snum!=''">
+                SNUM=#{snum},
+            </if>
+            <if test="sname!=null and sname!=''">
+                SNAME=#{sname},
+            </if>
+            <if test="sex!=null and sex!=''">
+                SEX=#{sex},
+            </if>
+            <if test="grade!=null and grade.id!=null">
+                GID=#{grade.id},
+            </if>
+            <if test="stel!=null and stel!=''">
+                STEL=#{stel},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="findStudentByCondition" resultType="com.eas.modules.student.entity.Student">
+        SELECT * FROM student
+        <where>
+            <if test="queryText!=null">
+                SNUM LIKE concat('%',#{queryText},'%') or SNAME LIKE concat('%',#{queryText},'%')
+                or GID LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+
+    <!--Grade getInfo(String snum)
+<select id="getInfo" resultMap="stu_grade">
+  SELECT
+    s.snum snum,
+    s.sname sname,
+    g.gname gname
+  FROM student s
+  INNER  JOIN grade g ON s.cid = g.id
+  WHERE s.snum = #{snum}
+</select>
+<resultMap id="stu_grade" type="com.eas.modules.grade.entity.Grade">
+    <result property="gname" column="gname" />
+    <collection property="students" ofType="com.eas.modules.student.entity.Student">
+        <result property="snum" column="snum" />
+        <result property="sname" column="sname" />
+    </collection>
+</resultMap>-->
+
+    <!-- 根据学号查询学生考试信息 -->
+    <!-- public Exam getStuExamInfByLogname(String snum); -->
+    <select id="getStuExamInfByLogname" resultMap="exam_lesson_availableRoom">
+        SELECT
+        s.snum snum, s.sname sname, g.gname gname, l.subject subject,
+        b.campus campus, b.bnum bnum, r.rnum rnum, w.date date,
+        t.starttime starttime, t.endtime endtime
+        FROM exam e
+        INNER JOIN availableroom a ON e.arid = a.id
+        INNER JOIN lesson l ON e.tids = l.tid
+        INNER JOIN room r ON a.rid = r.id
+        INNER JOIN week w ON a.weekid = w.id
+        INNER JOIN eas.period t ON a.timeid = t.id
+        INNER JOIN building b ON r.bid = b.id
+        INNER JOIN grade g ON l.gids = g.id
+        INNER JOIN student s ON g.id = s.gid
+        WHERE s.snum = #{snum}
+    </select>
+
+    <resultMap id="exam_lesson_availableRoom" type="com.eas.modules.exam.entity.Exam">
+
+        <association property="availableRoom"
+                     javaType="com.eas.modules.availableRoom.entity.AvailableRoom">
+            <association property="room"  javaType="com.eas.modules.room.entity.Room">
+                <result property="rnum" column="rnum" />
+                <association property="building" javaType="com.eas.modules.building.entity.Building">
+                    <result property="campus" column="campus" />
+                    <result property="bnum" column="bnum" />
+                </association>
+            </association>
+            <association property="week" javaType="com.eas.modules.week.entity.Week">
+                <result property="date" column="date" />
+            </association>
+            <association property="period" javaType="com.eas.modules.period.entity.Period">
+                <result property="starttime" column="starttime" />
+                <result property="endtime" column="endtime" />
+            </association>
+        </association>
+
+        <association property="lesson"
+                     javaType="com.eas.modules.lesson.entity.Lesson">
+            <result property="subject" column="subject" />
+            <collection property="grades" ofType="com.eas.modules.grade.entity.Grade">
+                <result property="gname" column="gname" />
+                <collection property="students" ofType="com.eas.modules.student.entity.Student">
+                    <result property="snum" column="snum" />
+                    <result property="sname" column="sname" />
+                </collection>
+            </collection>
+        </association>
+    </resultMap>
+
+
+
+    <!--
+
+        <select id="get" resultMap="myStudent">
+            SELECT * FROM student WHERE ID=#{id}
+        </select>
+
+        <resultMap id="myStudent" type="com.tss.modules.student.entity.Student">
+            <id column="ID" property="id"></id>
+            <result column="SNUM" property="snum"></result>
+            <result column="SNAME" property="sname"></result>
+            <result column="SEX" property="sex"></result>
+            <result column="STEL" property="stel"></result>
+            <result column="GID" property="grade.id"></result>
+            <association property="grade" select="com.tss.modules.grade.dao.GradeDao.get" column="GID"></association>
+        </resultMap>
+
+        <select id="findAllList" resultMap="myStudent">
+            SELECT * FROM student
+        </select>
+        -->
+
+
+    <delete id="deleteStudents">
+        DELETE FROM student
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="findListByText" resultMap="myStudent">
+        SELECT * FROM student
+        <where>
+            <if test="queryText!=null">
+                SNUM LIKE concat('%',#{queryText},'%') or SNAME LIKE concat('%',#{queryText},'%')
+                or STEL LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+
+
+
+
+</mapper>

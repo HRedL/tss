@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.task.dao.TaskDao">
+
+    <select id="get" resultType="com.eas.modules.task.entity.Task">
+        SELECT * FROM task WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.task.entity.Task">
+        SELECT * FROM task
+    </select>
+
+    <delete id="delete" >
+        DELETE  FROM task WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO task(startTime,isSuccess,endStatus)
+        VALUES (#{startTime},#{isSuccess},#{endStatus})
+    </insert>
+
+
+    <update id="update">
+        UPDATE task
+        <set>
+            <if test="startTime!=null and startTime!=''">
+                startTime=#{startTime},
+            </if>
+            <if test="isSuccess!=null and isSuccess!=''">
+                isSuccess=#{isSuccess},
+            </if>
+            <if test="endStatus!=null and endStatus!=''">
+                endStatus=#{endStatus}
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="getT" resultType="com.eas.modules.task.entity.Task">
+        SELECT * FROM task
+        <where>
+            <if test="startTime!=null">
+                startTime=#{startTime}
+            </if>
+            <if test="isSuccess!=null">
+                and isSuccess=#{isSuccess}
+            </if>
+            <if test="endStatus!=null">
+                and endStatus=#{endStatus}
+            </if>
+        </where>
+    </select>
+
+</mapper>

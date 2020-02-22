@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.eas.modules.dict.dao.DictDao">
+
+    <select id="get" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM DICT WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM DICT
+    </select>
+    <select id="getDictsByCondition" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict where TYPE=#{type}
+    </select>
+
+
+    <select id="getDictByCondition" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict WHERE TYPE=#{type} and VALUE=#{value}
+    </select>
+    <select id="getDictsByTypeAndLabel" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict WHERE TYPE=#{type} and label=#{label}
+    </select>
+
+    <select id="getDictByTypeAndLabel" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict WHERE TYPE=#{type} and label=#{label}
+    </select>
+
+
+    <delete id="delete" >
+        DELETE  FROM DICT WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO dict(VALUE ,LABEL,TYPE,DESCRIPTION,SORT,PARENTID)
+        VALUES (#{value},#{label},#{type},#{description},#{sort},#{parentId})
+    </insert>
+
+
+    <update id="update">
+        UPDATE dict
+        <set>
+            <if test="value!=null and value!=''">
+                VALUE =#{value},
+            </if>
+            <if test="label!=null and label!=''">
+                LABEL=#{label},
+            </if>
+            <if test="type!=null and type!=''">
+                TYPE=#{type},
+            </if>
+            <if test="description!=null and description!=''">
+                DESCRIPTION=#{description},
+            </if>
+            <if test="sort!=null and sort!=''">
+                SORT=#{sort},
+            </if>
+            <if test="parentId!=null and parentId!=''">
+                PARENTID=#{parentId},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="getDictsByType" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict WHERE type=#{type}
+    </select>
+
+    <select id="getDictsByTypeAndParentId" resultType="com.eas.modules.dict.entity.Dict">
+        SELECT * FROM dict WHERE type=#{type} and parentid=(
+          select id from dict where TYPE=#{ptype} and VALUE=#{pid}
+        )
+    </select>
+
+</mapper>

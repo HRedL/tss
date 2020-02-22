@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.publicLesson.dao.PublicLessonDao">
+
+    <resultMap id="myPublicLesson" type="com.eas.modules.publicLesson.entity.PublicLesson">
+        <id column="ID" property="id"></id>
+        <result column="LID" property="lesson.id"></result>
+        <result column="ARID" property="availableRoom.id"></result>
+        <result column="TIDS" property="tIds"></result>
+    </resultMap>
+
+
+    <select id="get" resultMap="myPublicLesson">
+        SELECT * FROM publicLesson WHERE ID=#{id}
+    </select>
+
+
+    <select id="findAllList" resultMap="myPublicLesson">
+        SELECT * FROM publicLesson
+    </select>
+
+    <delete id="delete" >
+        DELETE FROM publicLesson WHERE ID=#{id}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.eas.modules.publicLesson.entity.PublicLesson">
+        INSERT iNTO publicLesson(LID,ARID,TIDS)
+        VALUES (#{lesson.id},#{availableRoom.id},#{tIds})
+    </insert>
+
+
+    <update id="update">
+        UPDATE publicLesson
+        <set>
+            <if test="availableRoom.id!=null">
+                ARID=#{availableRoom.id},
+            </if>
+            <if test="lesson.id!=null">
+                lid=#{lesson.id},
+            </if>
+            <if test="tIds!=null">
+                tIds=#{tIds},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <delete id="deletePublicLessons">
+        DELETE FROM publicLesson
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getPublicLessons" resultMap="myPublicLesson">
+        SELECT * FROM publicLesson
+        <where>
+            <if test="availableRoom!=null">
+                ARID=#{availableRoom.id}
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="tIds!=null">
+                and tIds like concat('%',#{tIds},',%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getRoom" resultMap="myPublicLesson">
+        SELECT p.id,p.arid from publiclesson p
+        INNER JOIN lesson l ON p.LID = l.id GROUP BY l.lnum
+    </select>
+
+    <insert id="insertToExam" parameterType="com.eas.modules.publicLesson.entity.PublicLesson">
+    insert into exam(lid,gids,arid) select p.lid,l.gids,p.arid from publiclesson p INNER JOIN lesson l ON p.LID = l.id
+    where not exists(select * from exam where p.lid = exam.lid)
+    </insert>
+
+    <select id="getT" resultType="com.eas.modules.publicLesson.entity.PublicLesson">
+        SELECT * FROM publicLesson
+        <where>
+            <if test="availableRoom!=null">
+                ARID=#{availableRoom.id}
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="tIds!=null">
+                and tIds like concat('%',#{tIds},',%')
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insertPublicLessons" parameterType="com.eas.modules.publicLesson.entity.PublicLesson">
+        INSERT iNTO publicLesson(LID,ARID,TIDS,GIDS)VALUES
+        <foreach collection="list" item="publicLesson" separator=",">
+            (#{publicLesson.lesson.id},#{publicLesson.availableRoom.id},#{publicLesson.tIds},#{publicLesson.gids})
+        </foreach>
+
+    </insert>
+
+    <select id="findPublicLessonsByCondition" resultMap="myPublicLesson">
+        SELECT * FROM publicLesson
+        <where>
+            <if test="availableRooms!=null">
+                ARID IN
+                <foreach collection="availableRooms" open="(" close=")" separator="," item="availableRoom">
+                    #{availableRoom.id}
+                </foreach>
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+        </where>
+        limit #{start},#{pageSize}
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT count(*) FROM publicLesson
+        <where>
+            <if test="availableRooms!=null">
+                ARID IN
+                <foreach collection="availableRooms" open="(" close=")" separator="," item="availableRoom">
+                    #{availableRoom.id}
+                </foreach>
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+        </where>
+    </select>
+
+
+    <delete id="deleteAllPublicLessons">
+        DELETE FROM publicLesson
+    </delete>
+
+    <insert id="batchInsert" parameterType="com.eas.modules.publicLesson.entity.PublicLesson">
+        INSERT INTO publiclesson(LID,ARID)VALUES
+        <foreach collection="list" item="publicLesson" separator="," >
+            (#{publicLesson.lesson.id},#{publicLesson.availableRoom.id})
+        </foreach>
+    </insert>
+
+
+
+</mapper>

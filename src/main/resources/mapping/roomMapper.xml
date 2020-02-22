@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.room.dao.RoomDao">
+
+    <resultMap id="myRoom" type="com.eas.modules.room.entity.Room">
+        <id column="ID" property="id"></id>
+        <result column="RNUM" property="rnum"></result>
+        <result column="CAPACITY" property="capacity"></result>
+        <result column="TTOTALNUM" property="ttotalnum"></result>
+        <association property="building" select="com.eas.modules.building.dao.BuildingDao.get" column="BID"/>
+    </resultMap>
+
+    <select id="get" resultMap="myRoom">
+      SELECT * FROM room WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultMap="myRoom">
+        SELECT * FROM room
+    </select>
+
+    <delete id="delete" >
+        DELETE  FROM room WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO room(rnum ,capacity,ttotalnum,BID)
+        VALUES (#{rnum},#{capacity},#{ttotalnum},#{building.id})
+    </insert>
+
+
+    <update id="update">
+        UPDATE room
+        <set>
+            <if test="rnum!=null and rnum!=''">
+                rnum =#{rnum},
+            </if>
+            <if test="capacity!=null and capacity!=''">
+                capacity=#{capacity},
+            </if>
+            <if test="ttotalnum!=null and ttotalnum!=''">
+                ttotalnum=#{ttotalnum},
+            </if>
+            <if test="building.id!=null and building.id!=''">
+                BID=#{building.id},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <select id="getT" resultType="com.eas.modules.room.entity.Room">
+        SELECT * FROM room
+        <where>
+            <if test="building.id!=null">
+                BID=#{building.id}
+            </if>
+            <if test="rnum!=null">
+                and RNUM=#{rnum}
+            </if>
+            <if test="capacity!=null">
+                and CAPACITY=#{capacity}
+            </if>
+            <if test="ttotalnum!=null">
+                and TTOTALNUM=#{ttotalnum}
+            </if>
+        </where>
+    </select>
+
+
+
+    <select id="findRoomsByCondition" resultType="com.eas.modules.room.entity.Room">
+        SELECT * FROM room
+        <where>
+            <if test="queryText!=null">
+                RNUM LIKE concat('%',#{queryText},'%')
+                or CAPACITY LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getRoomsByBid" resultType="com.eas.modules.room.entity.Room">
+        SELECT * FROM room
+        WHERE BID=#{bid}
+        ORDER BY RNUM
+    </select>
+
+
+    <select id="findListByText" resultMap="myRoom">
+        SELECT * FROM room
+        <where>
+            <if test="queryText!=null">
+                RNUM LIKE concat('%',#{queryText},'%') or CAPACITY LIKE concat('%',#{queryText},'%')
+                or TTOTALNUM LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteRooms">
+        DELETE FROM room
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getRoomByBuildings" resultMap="myRoom">
+        SELECT * FROM room
+        <where>
+            BID in
+            <foreach collection="list" item="building" separator="," open="(" close=")">
+               #{building.id}
+            </foreach>
+        </where>
+    </select>
+
+
+    <select id="getRooms" resultType="com.eas.modules.room.entity.Room">
+        SELECT * FROM room
+        <where>
+            <if test="building.id!=null">
+                BID=#{building.id}
+            </if>
+            <if test="rnum!=null">
+                and RNUM=#{rnum}
+            </if>
+            <if test="capacity!=null">
+                and CAPACITY=#{capacity}
+            </if>
+            <if test="ttotalnum!=null">
+                and TTOTALNUM=#{ttotalnum}
+            </if>
+        </where>
+    </select>
+
+    <select id="getRoomsByRnum" resultType="com.eas.modules.room.entity.Room">
+        SELECT * FROM room
+        <where>
+            <if test="queryText!=null">
+                RNUM LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findRoomsByIds" resultMap="myRoom">
+        SELECT * FROM room
+        <where>
+            <if test="list!=null">
+                ID IN
+                <foreach collection="list" separator="," open="(" close=")" item="roomId">
+                    #{roomId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>

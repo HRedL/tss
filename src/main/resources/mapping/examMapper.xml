@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.exam.dao.ExamDao">
+
+    <resultMap id="myExam" type="com.eas.modules.exam.entity.Exam">
+        <id column="ID" property="id"></id>
+        <result column="LID" property="lesson.id"></result>
+        <result column="ARID" property="availableRoom.id"></result>
+        <result column="TIDS" property="tIds"></result>
+    </resultMap>
+
+    <select id="get" resultMap="myExam">
+        SELECT * FROM exam WHERE ID=#{id}
+    </select>
+
+
+    <select id="findAllList" resultMap="myExam">
+        SELECT * FROM exam
+    </select>
+
+    <resultMap id="myExam1" type="com.eas.modules.exam.entity.Exam">
+        <id column="ID" property="id"></id>
+        <result column="LID" property="lesson.id"></result>
+        <result column="TIDS" property="tIds"></result>
+        <association property="availableRoom" select="com.eas.modules.availableRoom.dao.AvailableRoomDao.get" column="ARID"/>
+    </resultMap>
+
+    <select id="findAllList1" resultMap="myExam1">
+        SELECT * FROM exam
+    </select>
+
+    <delete id="delete" >
+        DELETE FROM exam WHERE ID=#{id}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.eas.modules.exam.entity.Exam">
+        INSERT iNTO exam(LID,ARID,TIDS)
+        VALUES (#{lesson.id},#{availableRoom.id},#{tIds})
+    </insert>
+
+
+    <update id="update">
+        UPDATE exam
+        <set>
+            <if test="availableRoom.id!=null">
+                ARID=#{availableRoom.id},
+            </if>
+            <if test="lesson.id!=null">
+                lid=#{lesson.id},
+            </if>
+            <if test="tIds!=null">
+                tIds=#{tIds},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <delete id="deleteExams">
+        DELETE FROM exam
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getExams" resultMap="myExam">
+        SELECT * FROM exam
+        <where>
+            <if test="availableRoom!=null">
+                ARID=#{availableRoom.id}
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="tIds!=null">
+                and tIds like concat('%',#{tIds},',%')
+            </if>
+        </where>
+    </select>
+    <select id="getT" resultType="com.eas.modules.exam.entity.Exam">
+        SELECT * FROM exam
+        <where>
+            <if test="availableRoom!=null">
+                ARID=#{availableRoom.id}
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="tIds!=null">
+                and tIds like concat('%',#{tIds},',%')
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="insertExams" parameterType="com.eas.modules.exam.entity.Exam">
+        INSERT iNTO exam(LID,ARID,TIDS,GIDS)VALUES
+        <foreach collection="list" item="exam" separator=",">
+            (#{exam.lesson.id},#{exam.availableRoom.id},#{exam.tIds},#{exam.gids})
+        </foreach>
+    </insert>
+
+    <select id="getTInf" resultMap="MyExamInf">
+        SELECT
+        tea.tname tname, l.subject subject,l.lnum lnum,
+        b.campus campus, b.bnum bnum, r.rnum rnum, w.date date,
+        t.starttime starttime, t.endtime endtime
+        FROM exam e
+        INNER JOIN availableroom a ON e.arid = a.id
+        INNER JOIN lesson l ON e.lid = l.id
+        INNER JOIN room r ON a.rid = r.id
+        INNER JOIN week w ON a.weekid = w.id
+        INNER JOIN period t ON a.timeid = t.id
+        INNER JOIN building b ON r.bid = b.id
+        INNER JOIN teacher tea ON l.tid = tea.id
+        <where>
+            e.tids like concat('%,',#{tIds},',%')
+            or e.tids like concat(#{tIds},',%') or e.tids like concat('%,',#{tIds}) or e.tids=#{tIds}
+        </where>
+    </select>
+    <resultMap id="MyExamInf" type="com.eas.modules.exam.entity.Exam">
+        <result column="lnum" property="lesson.lnum"></result>
+        <result column="tname" property="lesson.teacher.tname"></result>
+        <result column="subject" property="lesson.subject"></result>
+        <result column="campus" property="availableRoom.room.building.campus"></result>
+        <result column="bnum" property="availableRoom.room.building.bnum"></result>
+        <result column="rnum" property="availableRoom.room.rnum"></result>
+        <result column="date" property="availableRoom.week.date"></result>
+        <result column="starttime" property="availableRoom.period.starttime"></result>
+        <result column="endtime" property="availableRoom.period.endtime"></result>
+    </resultMap>
+
+    <select id="getSInf" resultMap="MyExamInfor">
+        SELECT
+        l.lnum lnum, l.subject subject,
+        b.campus campus, b.bnum bnum, r.rnum rnum, w.date date,
+        t.starttime starttime, t.endtime endtime
+        FROM exam e
+        INNER JOIN availableroom a ON e.arid = a.id
+        INNER JOIN lesson l ON e.lid = l.id
+        INNER JOIN room r ON a.rid = r.id
+        INNER JOIN week w ON a.weekid = w.id
+        INNER JOIN period t ON a.timeid = t.id
+        INNER JOIN building b ON r.bid = b.id
+        <where>
+            e.gids like concat('%,',#{gids},',%')
+            or e.gids like concat(#{gids},',%') or e.gids like concat('%,',#{gids}) or e.gids=#{gids}
+        </where>
+    </select>
+
+    <resultMap id="MyExamInfor" type="com.eas.modules.exam.entity.Exam">
+        <result column="lnum" property="lesson.lnum"></result>
+        <result column="subject" property="lesson.subject"></result>
+        <result column="campus" property="availableRoom.room.building.campus"></result>
+        <result column="bnum" property="availableRoom.room.building.bnum"></result>
+        <result column="rnum" property="availableRoom.room.rnum"></result>
+        <result column="date" property="availableRoom.week.date"></result>
+        <result column="starttime" property="availableRoom.period.starttime"></result>
+        <result column="endtime" property="availableRoom.period.endtime"></result>
+    </resultMap>
+
+
+    <select id="findExamsByCondition" resultMap="myExam">
+        SELECT * FROM exam
+        <where>
+            <if test="availableRooms!=null">
+                ARID IN
+                <foreach collection="availableRooms" open="(" close=")" separator="," item="availableRoom">
+                    #{availableRoom.id}
+                </foreach>
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="teacher!=null">
+                and TIDS REGEXP concat('(^|[,])',#{teacher.id},',')
+            </if>
+        </where>
+        limit #{start},#{pageSize}
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT count(*) FROM exam
+        <where>
+            <if test="availableRooms!=null">
+                ARID IN
+                <foreach collection="availableRooms" open="(" close=")" separator="," item="availableRoom">
+                    #{availableRoom.id}
+                </foreach>
+            </if>
+            <if test="lesson!=null">
+                and LID=#{lesson.id}
+            </if>
+            <if test="teacher!=null">
+                and TIDS REGEXP concat('(^|[,])',#{teacher.id},',')
+            </if>
+        </where>
+    </select>
+
+
+    <delete id="deleteAllExams">
+        DELETE FROM exam
+    </delete>
+
+
+
+</mapper>

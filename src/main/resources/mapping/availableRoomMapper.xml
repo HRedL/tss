@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.availableRoom.dao.AvailableRoomDao">
+
+    <resultMap id="myAvailableRoom" type="com.eas.modules.availableRoom.entity.AvailableRoom">
+        <id column="ID" property="id"></id>
+        <result column="RID" property="room.id"></result>
+        <result column="WEEKID" property="week.id"></result>
+        <result column="TIMEID" property="period.id"></result>
+        <result column="flag" property="flag"></result>
+    </resultMap>
+    <select id="getAll" resultMap="myAvailableRoom">
+        SELECT * FROM availableroom
+    </select>
+
+
+    <select id="get" resultMap="myAvailableRoom">
+    SELECT * FROM availableroom WHERE ID=#{id}
+</select>
+
+<select id="findAllList" resultMap="myAvailableRoom">
+SELECT * FROM availableroom ORDER BY WEEKID ASC,TIMEID ASC
+</select>
+
+
+
+
+<delete id="delete">
+DELETE  FROM availableroom WHERE ID=#{id}
+</delete>
+
+    <insert id="insert">
+        INSERT into availableroom(RID,WEEKID,TIMEID)
+        VALUES (#{room.id},#{week.id},#{period.id})
+    </insert>
+    <update id="update">
+        UPDATE availableroom
+       <set>
+           <if test="room!=null and room.id!=null">
+               RID=#{room.id},
+           </if>
+           <if test="week!=null and period.id!=null">
+               WEEKID=#{week.id},
+           </if>
+           <if test="period!=null and period.id!=null">
+               TIMEID=#{period.id},
+           </if>
+           <if test="flag!=null">
+               flag=#{flag},
+           </if>
+       </set>
+          where ID=#{id}
+    </update>
+
+    <update id="updateRoom">
+        UPDATE availableroom
+        <set>
+            <if test="flag!=null">
+                flag=1,
+            </if>
+        </set>
+        where WEEKID=#{week.id} and TIMEID=#{period.id}
+    </update>
+
+    <select id="getT" resultType="com.eas.modules.availableRoom.entity.AvailableRoom">
+        SELECT * FROM availableroom
+        <where>
+            <if test="room!=null">
+                RID=#{room.id}
+            </if>
+            <if test="week!=null">
+                and WEEKID=#{week.id}
+            </if>
+            <if test="period!=null">
+                and TIMEID=#{period.id}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getAvailableRooms" resultMap="myAvailableRoom">
+        SELECT * FROM availableroom
+        <where>
+            <if test="room!=null and room.id!=null">
+                RID=#{room.id}
+            </if>
+            <if test="week!=null and week.id!=null">
+                and WEEKID=#{week.id}
+            </if>
+            <if test="period!=null and period.id!=null">
+                and TIMEID=#{period.id}
+            </if>
+            <if test="flag">
+                and flag=#{flag}
+            </if>
+        </where>
+    </select>
+
+
+
+    <delete id="deleteAvailableRooms">
+        DELETE FROM availableroom
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+    <insert id="batchInset" parameterType="java.util.List">
+        INSERT into availableroom(RID,WEEKID,TIMEID,flag) VALUES
+           <foreach collection="list" item="availableRoom" index="index" separator=",">
+                    (#{availableRoom.room.id},
+                 #{availableRoom.week.id},
+                   #{availableRoom.period.id},
+               ${availableRoom.flag})
+           </foreach>
+    </insert>
+
+
+    <delete id="deleteAllAvailableRoom">
+        DELETE FROM availableRoom
+    </delete>
+
+    <!--分页查询出用户信息-->
+    <select id="findAvailableRoomsByCondition" resultMap="myAvailableRoom">
+        SELECT * FROM availableRoom
+        <where>
+            <if test="queryText!='' ">
+                <if test="weeks!=null">
+                    WEEKID IN
+                    <foreach collection="weeks" item="week" separator="," open="(" close=")">
+                        <if test="week!=null">
+                            #{week.id}
+                        </if>
+                    </foreach>
+                </if>
+
+                <if test="periods!=null">
+                    TIMEID IN
+                    <foreach collection="periods" item="period" separator="," open="(" close=")">
+                        <if test="period!=null">
+                            #{period.id}
+                        </if>
+                    </foreach>
+                </if>
+                <if test="rooms!=null">
+                    RID IN
+                    <foreach collection="rooms" item="room" separator="," open="(" close=")">
+                        <if test="room!=null">
+                            #{room.id}
+                        </if>
+                    </foreach>
+                </if>
+            </if>
+        </where>
+        limit #{start},#{pageSize}
+    </select>
+
+    <select id="findAvailableRoomsCriteria" resultMap="myAvailableRoom">
+        SELECT * FROM availableRoom
+        <where>
+            <if test="weekId!=null">
+                WEEKID=#{weekId}
+            </if>
+            <if test="periodId!=null">
+                and TIMEID=#{periodId}
+            </if>
+            <if test="roomId!=null">
+                and RID=#{roomId}
+            </if>
+        </where>
+    </select>
+
+    <select id="findList" resultMap="myAvailableRoom">
+        SELECT * FROM availableRoom
+        <where>
+            <if test="week!=null and week.id!=null">
+                WEEKID=#{week.id}
+            </if>
+            <if test="period!=null and period.id!=null">
+                and TIMEID=#{period.id}
+            </if>
+            <if test="room!=null and room.id!=null">
+                and RID=#{room.id}
+            </if>
+        </where>
+    </select>
+
+    <select id="findListByWTB" resultMap="myAvailableRoom2">
+        SELECT
+        `availableroom`.`ID` AS `ID`,
+        `availableroom`.`RID` AS `RID`,
+        `availableroom`.`WEEKID` AS `WEEKID`,
+        `availableroom`.`TIMEID` AS `TIMEID`,
+        `availableroom`.`FLAG` AS `FLAG`,
+        `availableroom`.`TASK` AS `TASK`,
+        `building`.`ID` AS `building_id`,
+        `room`.`CAPACITY` AS `CAPACITY`
+        FROM
+        (
+        ( `availableroom` JOIN `room` ON ( ( `availableroom`.`RID` = `room`.`ID` ) ) )
+        JOIN `building` ON ( ( `room`.`BID` = `building`.`ID` ) )
+        )
+        <where>
+            <if test="week!=null and week.id!=null">
+                WEEKID=#{week.id}
+            </if>
+            <if test="period!=null and period.id!=null">
+                and TIMEID=#{period.id}
+            </if>
+            <if test="room!=null and room.building!=null and room.building.id!=null ">
+                and building.id=#{room.building.id}
+            </if>
+        </where>
+        order by capacity
+    </select>
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT count(*) FROM availableRoom
+        <where>
+            <if test="queryText!='' ">
+                <if test="weeks!=null">
+                    WEEKID IN
+                    <foreach collection="weeks" item="week" separator="," open="(" close=")">
+                        <if test="week!=null">
+                            #{week.id}
+                        </if>
+                    </foreach>
+                </if>
+
+                <if test="periods!=null">
+                    TIMEID IN
+                    <foreach collection="periods" item="period" separator="," open="(" close=")">
+                        <if test="period!=null">
+                            #{period.id}
+                        </if>
+                    </foreach>
+                </if>
+                <if test="rooms!=null">
+                    RID IN
+                    <foreach collection="rooms" item="room" separator="," open="(" close=")">
+                        <if test="room!=null">
+                            #{room.id}
+                        </if>
+                    </foreach>
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAvailableRoomsByBuildingAndTime" resultMap="myAvailableRoom">
+        SELECT * FROM availableRoom
+        <where>
+
+            <if test="rooms!=null">
+                RID IN
+                <foreach collection="rooms" item="room" separator="," open="(" close=")">
+                    <if test="room!=null">
+                        #{room.id}
+                    </if>
+                </foreach>
+            </if>
+            <if test="weekId!=null">
+               and WEEKID=#{weekId}
+            </if>
+            <if test="periodId!=null">
+                and TIMEID=#{periodId}
+            </if>
+        </where>
+    </select>
+
+
+
+
+    <select id="findAvailableRoomsByIds" resultMap="myAvailableRoom1">
+        SELECT * FROM availableRoom
+        <where>
+            <if test="list!=null">
+                ID IN
+                <foreach collection="list" item="availableRoomId" open="(" close=")" separator=",">
+                    <if test="availableRoomId!=null">
+                        #{availableRoomId}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="myAvailableRoom1" type="com.eas.modules.availableRoom.entity.AvailableRoom">
+        <id column="ID" property="id"></id>
+        <result column="RID" property="room.id"></result>
+        <result column="WEEKID" property="week.id"></result>
+        <result column="TIMEID" property="period.id"></result>
+        <result column="flag" property="flag"></result>
+        <association property="week" select="com.eas.modules.week.dao.WeekDao.get" column="weekId"/>
+        <association property="period" select="com.eas.modules.period.dao.PeriodDao.get" column="timeId"/>
+    </resultMap>
+
+    <resultMap id="myAvailableRoom2" type="com.eas.modules.availableRoom.entity.AvailableRoom">
+        <id column="ID" property="id"></id>
+        <result column="flag" property="flag"></result>
+        <association property="room" select="com.eas.modules.room.dao.RoomDao.get" column="rId"/>
+        <association property="week" select="com.eas.modules.week.dao.WeekDao.get" column="weekId"/>
+        <association property="period" select="com.eas.modules.period.dao.PeriodDao.get" column="timeId"/>
+    </resultMap>
+
+    <select id="findAllAvWithAllInfo" resultMap="myAvailableRoom1">
+        SELECT * FROM availableroom ORDER BY WEEKID ASC,TIMEID ASC
+    </select>
+
+    <update id="updateList">
+        update availableRoom set
+        FLAG =
+        <foreach collection="list" item="availableRoom" index="index"
+                 separator=" " open="case id" close="end">
+            when #{availableRoom.id} then
+            #{availableRoom.flag}
+        </foreach>
+
+        where id in
+        <foreach collection="list" item="availableRoom" index="index"
+                 separator="," open="(" close=")">
+            #{availableRoom.id}
+        </foreach>
+    </update>
+
+</mapper>

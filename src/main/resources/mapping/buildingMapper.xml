@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.building.dao.BuildingDao">
+
+    <select id="get" resultType="com.eas.modules.building.entity.Building">
+        SELECT * FROM building WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.building.entity.Building">
+        SELECT * FROM building
+    </select>
+
+    <delete id="delete" >
+        DELETE  FROM building WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO building (campus ,bnum)
+        VALUES (#{campus},#{bnum})
+    </insert>
+
+
+    <update id="update">
+        UPDATE building
+        <set>
+            <if test="campus!=null and campus!=''">
+                campus =#{campus},
+            </if>
+            <if test="bnum!=null and bnum!=''">
+                bnum=#{bnum},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="getT" resultType="com.eas.modules.building.entity.Building">
+        SELECT * FROM building
+        <where>
+            <if test="campus!=null">
+                campus=#{campus}
+            </if>
+            <if test="bnum!=null">
+                and bnum=#{bnum}
+            </if>
+        </where>
+    </select>
+    <select id="getBuildingByCampus" resultType="com.eas.modules.building.entity.Building">
+        SELECT * FROM building WHERE campus=#{campus}
+    </select>
+    <select id="getBuildingByBnum" resultType="com.eas.modules.building.entity.Building">
+        SELECT * FROM building WHERE bnum=#{bnum}
+    </select>
+</mapper>

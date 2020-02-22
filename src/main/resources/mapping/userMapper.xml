@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+
+<mapper namespace="com.eas.modules.user.dao.UserDao">
+        <delete id="deleteUsers">
+        DELETE FROM user
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getT" resultType="com.eas.modules.user.entity.User">
+        SELECT * FROM USER
+        <where>
+            <if test="logname!=null">
+                logname=#{logname}
+            </if>
+        </where>
+    </select>
+    <!-- 根据用户名和用户类型查询用户信息 -->
+    <!-- User findUserByLognameAndType(String logname, String type) -->
+    <select id="findUserByLognameAndType"
+            resultType="com.eas.modules.user.entity.User">
+        SELECT
+        id, logname, password, name, pic, exist_pic, type
+        FROM
+        user
+        WHERE
+        logname = #{logname} AND type = #{type}
+    </select>
+
+    <!-- 根据用户名查询用户信息 -->
+    <!-- User findUserByLogname(String logname) -->
+    <select id="findUserByLogname"
+            resultType="com.eas.modules.user.entity.User">
+        SELECT
+            id, logname, password, name, pic, exist_pic, type
+        FROM
+          user
+        WHERE
+          logname = #{logname}
+    </select>
+
+    <!-- 根据用户id查询用户信息 -->
+    <!-- User findUserById(Integer id) -->
+    <select id="findUserById"
+            resultType="com.eas.modules.user.entity.User">
+        SELECT
+            id, logname, password, name, pic, exist_pic, type
+        FROM
+          user
+        WHERE
+          id=#{id}
+    </select>
+    <select id="get" resultType="com.eas.modules.user.entity.User">
+        SELECT * FROM USER WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.user.entity.User">
+        SELECT * FROM USER
+    </select>
+
+    <delete id="delete">
+        DELETE FROM USER WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO user(LOGNAME,PASSWORD,NAME,TYPE,PIC,EXIST_PIC)
+        VALUES (#{logname},#{password},#{name},#{type},#{pic},#{exist_pic})
+    </insert>
+
+    <!-- 修改用户数据，可用于修改个人资料，也可用于修改密码 -->
+    <!-- int update(User user) -->
+    <update id="update" parameterType="com.eas.modules.user.entity.User">
+        UPDATE user
+        <set>
+            <if test="logname!=null and logname!=''">
+                LOGNAME=#{logname},
+            </if>
+            <if test="password!=null and password!=''">
+                PASSWORD=#{password},
+            </if>
+            <if test="name!=null and name!=''">
+                NAME=#{name},
+            </if>
+            <if test="type=null and type!=''">
+                TYPE=#{type},
+            </if>
+            <if test="pic!=null and pic!=''">
+                PIC=#{pic},
+            </if>
+            <if test="exist_pic!=null and exist_pic!=''">
+                EXIST_PIC=#{exist_pic},
+            </if>
+            id=#{id}
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="findUserByCondition" resultType="com.eas.modules.user.entity.User">
+        SELECT * FROM USER
+        <where>
+            <if test="queryText!=null">
+                logname LIKE concat('%',#{queryText},'%') or
+                name LIKE concat('%',#{queryText},'%') or
+                type LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+</mapper>

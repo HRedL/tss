@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+    
+    <!--引入外部数据库连接信息文件-->
+    <context:property-placeholder location="classpath:db.properties"/>
+    
+    <!--配置数据库连接信息-->
+    <bean class="com.mchange.v2.c3p0.ComboPooledDataSource" name="dataSource">
+        <!--配置数据库连接基本信息-->
+        <property name="jdbcUrl" value="${mysql.url}"/>
+        <property name="password" value="${mysql.password}"/>
+        <property name="driverClass" value="${mysql.driver}"/>
+        <property name="user" value="${mysql.username}"/>
+        
+        <!--配置数据库连接池相关的信息-->
+        <property name="initialPoolSize" value="${mysql.initialPoolSize}"/>
+        <property name="minPoolSize" value="${mysql.minPoolSize}"/>
+        <property name="maxPoolSize" value="${mysql.maxPoolSize}"/>
+        <property name="acquireIncrement" value="${mysql.acquireIncrement}"/>
+    </bean>
+    
+
+
+    <!--配置sqlSessionFactory-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" name="sqlSessionFactory">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath:mapping/**/*Mapper.xml"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!--4 自动扫描对象关系映射 -->
+    <!-- 扫描basePackage下所有以@MyBatisDao注解的接口 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.eas"/>
+        <property name="annotationClass" value="com.eas.common.annotation.MybatisDao"/>
+    </bean>
+    
+    <!--5 声明式事务管理 -->
+    <!--定义事物管理器，由spring管理事务 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--支持注解驱动的事务管理，指定事务管理器 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <!--6 容器自动扫描IOC组件,不扫描Controller-->
+    <context:component-scan base-package="com.eas">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--7 aspectj支持自动代理实现AOP功能 -->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+    <!-- 工具类要用的 -->
+    <bean class="com.eas.common.utils.SpringTool"/>
+
+
+    <!--配置文件上传multipartResolver-->
+    <bean name="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+
+
+
+</beans>

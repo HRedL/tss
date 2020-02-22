@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.feedback.dao.FeedbackDao">
+
+    <resultMap id="myFeedback" type="com.eas.modules.feedback.entity.Feedback">
+        <id column="ID" property="id"></id>
+        <result column="period" property="period"></result>
+        <result column="question" property="question"></result>
+        <result column="answer" property="answer"></result>
+        <result column="title" property="title"></result>
+        <result column="hasRead" property="hasRead"></result>
+        <association property="questionUser" select="com.eas.modules.user.dao.UserDao.findUserById" column="qid"/>
+        <association property="answerUser" select="com.eas.modules.user.dao.UserDao.findUserById" column="aid"/>
+    </resultMap>
+
+    <select id="get" resultMap="myFeedback">
+        SELECT * FROM feedback WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.feedback.entity.Feedback">
+        SELECT * FROM feedback
+    </select>
+
+    <delete id="delete" >
+        DELETE  FROM feedback WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO feedback(period,question,answer,hasRead)
+        VALUES (#{period},#{question},#{answer},#{hasRead})
+    </insert>
+
+
+    <update id="update">
+        UPDATE feedback
+        <set>
+            <if test="period!=null and period!=''">
+                 period=#{period},
+            </if>
+            <if test="question!=null and question!=''">
+                 question=#{question},
+            </if>
+            <if test="answer!=null and answer!=''">
+                 answer=#{answer},
+            </if>
+            <if test="hasRead!=null and hasRead!=''">
+                 hasRead=#{hasRead},
+            </if>
+
+            <if test="title!=null and title!=''">
+                 title=#{title},
+            </if>
+            <if test="questionUser!=null and questionUser.id!=null">
+                 qid=#{questionUser.id},
+            </if>
+            <if test="answerUser!=null and answerUser.id!=null">
+                 aid=#{answerUser.id},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+    <select id="getT" resultType="com.eas.modules.feedback.entity.Feedback">
+        SELECT * FROM feedback
+        <where>
+            <if test="period!=null and period!=''">
+                period=#{period},
+            </if>
+            <if test="question!=null and question!=''">
+                question=#{question},
+            </if>
+            <if test="answer!=null and answer!=''">
+                answer=#{answer}
+            </if>
+            <if test="hasRead!=null and hasRead!=''">
+                hasRead=#{hasRead}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getList" resultMap="myFeedback">
+        SELECT * FROM feedback
+        <where>
+            <if test="period!=null and period!=''">
+                period=#{period},
+            </if>
+            <if test="question!=null and question!=''">
+                and question=#{question},
+            </if>
+            <if test="answer!=null and answer!=''">
+                and answer=#{answer}
+            </if>
+            <if test="hasRead!=null and hasRead!=''">
+                and hasRead=#{hasRead}
+            </if>
+            <if test="questionUser!=null and questionUser.id!=null">
+                and qid=#{questionUser.id}
+            </if>
+            <if test="answerUser!=null and answerUser.id!=null">
+                and aid=#{answerUser.id}
+            </if>
+        </where>
+    </select>
+
+
+    <!--分页查询出用户信息-->
+    <select id="getListCriteria" resultMap="myFeedback">
+        SELECT * FROM feedback
+        <where>
+            <if test="feedback.period!=null and feedback.period!=''">
+                period=#{feedback.period},
+            </if>
+            <if test="feedback.question!=null and feedback.question!=''">
+                and question=#{feedback.question},
+            </if>
+            <if test="feedback.answer!=null and feedback.answer!=''">
+                and answer=#{feedback.answer}
+            </if>
+            <if test="feedback.title!=null and feedback.title!=''">
+                and title=#{feedback.title}
+            </if>
+            <if test="feedback.hasRead!=null and feedback.hasRead!=''">
+                and hasRead=#{feedback.hasRead}
+            </if>
+            <if test="feedback.questionUser!=null and feedback.questionUser.id!=null">
+                and qid=#{feedback.questionUser.id}
+            </if>
+            <if test="feedback.answerUser!=null and feedback.answerUser.id!=null">
+                and aid=#{feedback.answerUser.id}
+            </if>
+        </where>
+        limit #{start},#{pageSize}
+    </select>
+
+    <!--分页查询出用户信息-->
+    <select id="getCountCriteria" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM feedback
+        <where>
+            <if test="feedback.period!=null and feedback.period!=''">
+                period=#{feedback.period},
+            </if>
+            <if test="feedback.question!=null and feedback.question!=''">
+                and question=#{feedback.question},
+            </if>
+            <if test="feedback.answer!=null and feedback.answer!=''">
+                and answer=#{feedback.answer}
+            </if>
+            <if test="feedback.title!=null and feedback.title!=''">
+                and title=#{feedback.title}
+            </if>
+            <if test="feedback.hasRead!=null and feedback.hasRead!=''">
+                and hasRead=#{feedback.hasRead}
+            </if>
+            <if test="feedback.questionUser!=null and feedback.questionUser.id!=null">
+                and qid=#{feedback.questionUser.id}
+            </if>
+            <if test="feedback.answerUser!=null and feedback.answerUser.id!=null">
+                and aid=#{feedback.answerUser.id}
+            </if>
+        </where>
+    </select>
+
+    <insert id="addSendFeedback">
+        INSERT INTO feedback(period,question,hasRead,title,qid,aid)
+        VALUES (#{period},#{question},#{hasRead},#{title},#{questionUser.id},#{answerUser.id})
+    </insert>
+
+</mapper>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+
+<mapper namespace="com.eas.modules.teacher.dao.TeacherDao">
+
+    <!-- 根据tnum查找考次exam -->
+    <!-- List<Exam> findExamsByTid(Integer tid); -->
+    <select id="findExamsByTid"
+            resultMap="exams">
+        SELECT
+        l.lnum lnum, l.subject subject, l.type type,
+        b.campus campus, b.bnum bnum, r.rnum rnum,
+        w.date date, t.starttime starttime, t.endtime endtime
+        FROM
+        exam e
+        INNER JOIN availableroom a ON e.arid = a.id
+        INNER JOIN room r ON a.RID = r.ID
+        INNER JOIN building b ON b.ID = r.BID
+        INNER JOIN lesson l ON e.LID = l.ID
+        INNER JOIN week w ON a.WEEKID = w.ID
+        INNER JOIN eas_data.period t ON a.TIMEID = t.ID
+        WHERE
+        e.tids LIKE concat('%',#{tid},'%')
+    </select>
+
+    <resultMap id="exams" type="com.eas.modules.exam.entity.Exam">
+
+        <association property="lesson"
+                     javaType="com.eas.modules.lesson.entity.Lesson">
+            <result property="subject" column="subject" />
+            <result property="lnum" column="lnum" />
+            <result property="type" column="type" />
+        </association>
+
+        <association property="availableRoom"
+                     javaType="com.eas.modules.availableRoom.entity.AvailableRoom">
+            <association property="room"  javaType="com.eas.modules.room.entity.Room">
+                <result property="rnum" column="rnum" />
+                <association property="building" javaType="com.eas.modules.building.entity.Building">
+                    <result property="campus" column="campus" />
+                    <result property="bnum" column="bnum" />
+                </association>
+            </association>
+            <association property="week" javaType="com.eas.modules.week.entity.Week">
+                <result property="date" column="date" />
+            </association>
+            <association property="period" javaType="com.eas.modules.period.entity.Period">
+                <result property="starttime" column="starttime" />
+                <result property="endtime" column="endtime" />
+            </association>
+        </association>
+
+    </resultMap>
+
+    <!--根据value和type查询label-->
+    <!--Dict findLabelByValueAndType(String dictValue, String type);-->
+    <select id="findLabelByValueAndType" parameterType="java.lang.String"
+            resultType="com.eas.modules.dict.entity.Dict">
+        SELECT
+        *
+        FROM
+        dict
+        WHERE
+        value=#{dictValue} AND TYPE=#{type}
+    </select>
+
+    <!-- 根据教师号查找教师 -->
+    <!-- Teacher findTeachertByTnum(String tnum); -->
+    <select id="findTeacherByTnum"
+            resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT
+          ID, TNUM, TNAME, SEX, ACADEMY, DEPT, TTEL, TINVTIMES
+        FROM
+          teacher
+        WHERE
+          TNUM= #{tnum}
+    </select>
+
+    <select id="get" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher WHERE ID=#{id}
+    </select>
+
+    <select id="findAllList" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+    </select>
+
+    <delete id="delete">
+        DELETE FROM teacher WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO teacher(TNUM,TNAME,SEX,ACADEMY,DEPT,TTEL,TINVTIMES)
+        VALUES (#{tnum},#{tname},#{sex},#{academy},#{dept},#{ttel},#{TINVTIMES})
+    </insert>
+
+
+    <update id="update">
+        UPDATE teacher
+        <set>
+            <if test="tnum!=null and tnum!=''">
+                TNUM=#{tnum},
+            </if>
+            <if test="tname!=null and tname!=''">
+                TNAME=#{tname},
+            </if>
+            <if test="sex!=null and sex!=''">
+                SEX=#{sex},
+            </if>
+            <if test="academy!=null and academy!=''">
+                ACADEMY=#{academy},
+            </if>
+            <if test="dept!=null and dept!=''">
+                DEPT=#{dept},
+            </if>
+            <if test="ttel!=null and ttel!=''">
+                TTEL=#{ttel},
+            </if>
+            <if test="TINVTIMES!=null and TINVTIMES!=''">
+                TINVTIMES=#{TINVTIMES},
+            </if>
+        </set>
+        where ID=#{id}
+    </update>
+
+
+
+    <select id="getT" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="tnum!=null">
+                tnum=#{tnum}
+            </if>
+            <if test="academy!=null">
+                and academy=#{academy}
+            </if>
+            <if test="dept!=null">
+                and dept=#{dept}
+            </if>
+            <if test="sex!=null">
+                and sex=#{sex}
+            </if>
+            <if test="ttel!=null">
+                and ttel=#{ttel}
+            </if>
+            <if test="tname!=null">
+                and tname=#{tname}
+            </if>
+            <if test="TINVTIMES!=null">
+                and TINVTIMES=#{TINVTIMES}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="findTeacherByCondition" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="queryText!=null">
+                tnum LIKE concat('%',#{queryText},'%')
+                or tname LIKE concat('%',#{queryText},'%')
+                or academy LIKE concat('%',#{queryText},'%')
+                or dept LIKE concat('%',#{queryText},'%')
+                or ttel LIKE concat('%',#{queryText},'%')
+                or TINVTIMES LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+
+    <select id="findAllOrderByTINVTIMES" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher ORDER BY TINVTIMES ASC,TNUM ASC
+    </select>
+
+
+    <select id="findListByText" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+        <where>
+            <if test="queryText!=null">
+                TNUM LIKE concat('%',#{queryText},'%') or TNAME LIKE concat('%',#{queryText},'%')
+                or TTEL LIKE concat('%',#{queryText},'%') or TINVTIMES LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+    <select id="findAllListOrderByTInvtimes" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+        ORDER BY TINVTIMES ASC
+    </select>
+
+
+    <select id="getTeacherByTids" resultType="com.eas.modules.teacher.entity.Teacher">
+        SELECT * FROM teacher
+        <where>
+                id IN
+                <foreach collection="list" item="teacher" open="(" close=")" separator=",">
+                        #{teacher.id}
+                </foreach>
+        </where>
+    </select>
+
+
+    <delete id="deleteTeachers">
+        DELETE FROM teacher
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

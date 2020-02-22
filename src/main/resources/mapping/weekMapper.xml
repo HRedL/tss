@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.week.dao.WeekDao">
+
+	<insert id="insert"
+		parameterType="com.eas.modules.week.entity.Week"
+		useGeneratedKeys="true"
+		keyProperty="id">
+	INSERT INTO
+		week(TERM, DATE)
+	VALUES( #{term}, #{date} )
+	</insert>
+	<!-- List<Week> findAllWeek() -->
+    <select id="findAllList"
+    	resultType="com.eas.modules.week.entity.Week">
+        SELECT
+        	ID,TERM, DATE
+        FROM
+        	week
+    </select>
+	<!-- Week findWeekById(Integer id) -->
+	<select id="get"
+		resultType="com.eas.modules.week.entity.Week">
+	SELECT
+		ID,TERM, DATE
+	FROM
+		week
+	WHERE
+		id=#{id}
+	</select>
+	<!-- Integer delete(Integer id) -->
+    <delete id="delete">
+	DELETE FROM
+		week
+	WHERE
+		id=#{id}
+	</delete>
+	<!-- Integer update(Week week) -->
+	<!-- 动态SQL -->
+	<update id="update" 
+		parameterType="com.eas.modules.week.entity.Week">
+	UPDATE
+		week
+	SET
+		<if test="term != ''">
+		TERM = #{term},
+		</if>
+		<if test="date != ''">
+		DATE = #{date},
+		</if>
+		id=#{id}
+	WHERE
+		id=#{id}
+	</update>
+
+
+	<select id="getT" resultType="com.eas.modules.week.entity.Week">
+		SELECT * FROM week
+		<where>
+			<if test="date!=null">
+				and date=#{date}
+			</if>
+		</where>
+	</select>
+    <!--<select id="findWeeksByCondition" resultType="com.tss.modules.week.entity.Week">-->
+		<!--SELECT * FROM week-->
+		<!--<where>-->
+			<!--<if test="queryText!=null">-->
+				<!--TERM LIKE concat('%',#{queryText},'%')-->
+				<!--or DATE LIKE concat('%',#{queryText},'%')-->
+			<!--</if>-->
+		<!--</where>-->
+	<!--</select>-->
+
+    <select id="findListByText" resultType="com.eas.modules.week.entity.Week">
+        SELECT * FROM week
+        <where>
+            <if test="queryText!=null">
+                term LIKE concat('%',#{queryText},'%')
+                or date LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+
+    <delete id="deleteWeeks">
+        DELETE FROM week
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
+
+
+
+
+
+

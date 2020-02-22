@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间应该是对应接口的包名+接口名 -->
+<mapper namespace="com.eas.modules.lesson.dao.LessonDao">
+
+    <!--
+        写了好久呢，不舍得删。。。
+    <resultMap id="myLesson" type="com.tss.modules.lesson.entity.Lesson">-->
+        <!--<id column="ID" property="id"></id>-->
+        <!--<result column="LNUM" property="lnum"></result>-->
+        <!--<result column="SUBJECT" property="subject"></result>-->
+        <!--<result column="LTOTALNUM" property="ltotalnum"></result>-->
+        <!--<result column="TYPE" property="type"></result>-->
+        <!--<association property="teacher" select="com.tss.modules.teacher.dao.TeacherDao.get" column="TID"></association>-->
+        <!--<collection property="grades" select="com.tss.modules.lessonGroup.dao.LessonGroupDao.getGrades" column="ID"></collection>-->
+    <!--</resultMap>-->
+
+    <!--<select id="get" resultMap="myLesson">-->
+        <!--SELECT * FROM lesson WHERE id=#{id}-->
+    <!--</select>-->
+    <resultMap id="myLesson" type="com.eas.modules.lesson.entity.Lesson">
+        <id column="ID" property="id"></id>
+        <result column="LNUM" property="lnum"></result>
+        <result column="SUBJECT" property="subject"></result>
+        <result column="LTOTALNUM" property="ltotalnum"></result>
+        <result column="TYPE" property="type"></result>
+        <result column="TID" property="teacher.id"></result>
+        <result column="GIDS" property="gIds"></result>
+        <result column="flag" property="flag"></result>
+    </resultMap>
+
+    <select id="get" resultMap="myLesson">
+        SELECT * FROM lesson WHERE ID=#{id}
+    </select>
+
+
+    <select id="findAllList" resultMap="myLesson">
+        SELECT * FROM lesson
+    </select>
+
+    <delete id="delete">
+        DELETE FROM lesson WHERE ID=#{id}
+    </delete>
+
+    <insert id="insert">
+            INSERT INTO lesson(LNUM, SUBJECT, LTOTALNUM,TYPE, TID, GIDS)
+            VALUES (#{lnum},#{subject},#{ltotalnum},#{type},#{teacher.id},#{gIds})
+    </insert>
+
+
+    <update id="update">
+        UPDATE lesson
+        <set>
+            <if test="lnum!=null">
+                LNUM=#{lnum},
+            </if>
+            <if test="ltotalnum!=null">
+                LTOTALNUM=#{ltotalnum},
+            </if>
+            <if test="subject!=null ">
+                SUBJECT=#{subject},
+            </if>
+            <if test="gIds!=null">
+                GIDS=#{gIds},
+            </if>
+            <if test="teacher!=null">
+                TID=#{teacher.id},
+            </if>
+        </set>
+       where ID=#{id}
+    </update>
+
+
+    <select id="findLessonsByCondition" resultType="com.eas.modules.lesson.entity.Lesson">
+        SELECT * FROM lesson
+        <where>
+            <if test="queryText!=null">
+                LTOTALNUM LIKE concat('%',#{queryText},'%') or LNUM LIKE concat('%',#{queryText},'%') or SUBJECT LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getT" resultType="com.eas.modules.lesson.entity.Lesson">
+        SELECT * FROM lesson
+        <where>
+            <if test="lnum!=null">
+                LNUM=#{lnum}
+            </if>
+            <if test="ltotalnum!=null">
+                and LTOTALNUM=#{ltotalnum}
+            </if>
+            <if test="subject!=null ">
+                and SUBJECT=#{subject}
+            </if>
+            <if test="gIds!=null">
+                and GIDS=#{gIds}
+            </if>
+            <if test="teacher!=null">
+                and TID=#{teacher.id}
+            </if>
+        </where>
+    </select>
+
+    <select id="findListByText" resultType="com.eas.modules.lesson.entity.Lesson">
+        SELECT * FROM lesson
+        <where>
+            <if test="queryText!=null">
+                LTOTALNUM LIKE concat('%',#{queryText},'%') or LNUM LIKE concat('%',#{queryText},'%') or SUBJECT LIKE concat('%',#{queryText},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findList" resultType="com.eas.modules.lesson.entity.Lesson">
+        SELECT * FROM lesson
+        <where>
+            <if test="lnum!=null">
+                LNUM=#{lnum}
+            </if>
+        </where>
+    </select>
+
+    <select id="findLessonNumberList" resultType="String">
+        SELECT lnum FROM lesson group by lnum
+    </select>
+
+    <select id="getLessonByLnum" resultType="com.eas.modules.lesson.entity.Lesson">
+        SELECT * FROM lesson WHERE lnum=#{lnum}
+    </select>
+
+    <delete id="deleteLessons">
+        DELETE FROM lesson
+        WHERE id IN
+        <foreach collection="array" separator="," item="id" open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <insert id="bacthInset" parameterType="com.eas.modules.lesson.entity.Lesson">
+        INSERT iNTO lesson(LNUM,SUBJECT,LTOTALNUM,TYPE,TID,GIDS)VALUES
+        <foreach collection="list" item="lesson" separator=",">
+            (#{lesson.lnum},#{lesson.subject},#{lesson.ltotalnum},#{lesson.type},#{lesson.teacher.id},#{lesson.gIds})
+        </foreach>
+
+    </insert>
+
+
+    <select id="findLessonsByIds" resultMap="myLesson">
+        SELECT * FROM lesson
+        <where>
+            <if test="list!=null">
+                ID IN
+                <foreach collection="list" item="lessonId" open="(" close=")" separator=",">
+                    <if test="lessonId!=null">
+                        #{lessonId}
+                    </if>
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <resultMap id="myLesson1" type="com.eas.modules.lesson.entity.Lesson">
+        <id column="ID" property="id"></id>
+        <result column="LNUM" property="lnum"></result>
+        <result column="SUBJECT" property="subject"></result>
+        <result column="LTOTALNUM" property="ltotalnum"></result>
+        <result column="TYPE" property="type"></result>
+        <result column="GIDS" property="gIds"></result>
+        <result column="flag" property="flag"></result>
+        <association property="teacher" select="com.eas.modules.teacher.dao.TeacherDao.get" column="tid"/>
+    </resultMap>
+
+
+    <select id="findAllLessonWithAllInfo" resultMap="myLesson">
+        SELECT * FROM lesson
+
+        ORDER BY lnum
+    </select>
+
+
+</mapper>
